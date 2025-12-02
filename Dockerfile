@@ -41,6 +41,10 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 
+# Copy start script
+COPY start.sh ./
+RUN chmod +x start.sh
+
 # Generate Prisma client
 RUN npx prisma generate
 
@@ -55,4 +59,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["./start.sh"]
