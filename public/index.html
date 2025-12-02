@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofertas MX - Cazador de Precios Automático</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            background-image:
+                radial-gradient(at 20% 30%, rgba(102, 126, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 70%, rgba(118, 75, 162, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(46, 213, 115, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e4e4e7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: #a1a1aa;
+            font-size: 1.1em;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 15px;
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #a1a1aa;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5em;
+            font-weight: 800;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 35px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .section h2 {
+            color: #e4e4e7;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            font-weight: 700;
+        }
+
+        .offer-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .offer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .offer-card.error {
+            border-left: 4px solid #ff4757;
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .offer-card.deal {
+            border-left: 4px solid #2ed573;
+            background: rgba(46, 213, 115, 0.05);
+        }
+
+        .offer-title {
+            font-weight: 600;
+            color: #e4e4e7;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+            line-height: 1.4;
+        }
+
+        .offer-details {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .price-old {
+            text-decoration: line-through;
+            color: #71717a;
+            font-size: 0.95em;
+        }
+
+        .price-new {
+            color: #2ed573;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .discount {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+        }
+
+        .store-badge {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .add-product {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-product input {
+            flex: 1;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.95em;
+            color: #e4e4e7;
+            transition: all 0.3s ease;
+        }
+
+        .add-product input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .add-product input::placeholder {
+            color: #71717a;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: #a1a1aa;
+            font-size: 1.1em;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 40px;
+            color: #71717a;
+            font-size: 1.05em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading::after {
+            content: '...';
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Ofertas MX</h1>
+            <p>Cazador Automático de Ofertas y Errores de Precio</p>
+            <span class="hero-badge">🤖 100% Automático - Todas las Tiendas</span>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>Productos Rastreados</h3>
+                <div class="value" id="totalProducts">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ofertas Detectadas</h3>
+                <div class="value" id="totalOffers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Errores de Precio</h3>
+                <div class="value" id="errorPrices">-</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Agregar Producto</h2>
+            <div class="add-product">
+                <input type="text" id="productSearch" placeholder="🔍 Buscar por nombre (ej: iPhone 15, PS5, laptop gaming)">
+                <button class="btn" onclick="searchProduct()">Buscar y Rastrear</button>
+            </div>
+            <div style="text-align: center; margin: 15px 0; color: #71717a;">O</div>
+            <div class="add-product">
+                <input type="text" id="productUrl" placeholder="🔗 Pega URL directa (Amazon, Mercado Libre, Liverpool, etc.)">
+                <button class="btn" onclick="addProduct()">Rastrear URL</button>
+            </div>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h2>🤖 Búsqueda Automática</h2>
+            <p style="color: #a1a1aa; margin-bottom: 20px;">
+                El sistema busca automáticamente productos cada 2 horas.<br>
+                O puedes iniciar una búsqueda manual ahora:
+            </p>
+            <button class="btn" onclick="runAutoDiscovery()" style="font-size: 1.1em; padding: 15px 30px;">
+                🚀 Iniciar Búsqueda Automática Ahora
+            </button>
+            <div id="discoveryStatus" style="margin-top: 15px; color: #2ed573;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔥 Ofertas Recientes</h2>
+            <div id="offers" class="loading">Cargando ofertas...</div>
+        </div>
+
+        <div class="section">
+            <h2>📦 Productos Rastreados</h2>
+            <div id="products" class="loading">Cargando productos...</div>
+        </div>
+    </div>
+
+    <script>
+        // Load stats
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            const stats = await res.json();
+
+            document.getElementById('totalProducts').textContent = stats.totalProducts;
+            document.getElementById('totalOffers').textContent = stats.totalOffers;
+            document.getElementById('errorPrices').textContent = stats.errorPrices;
+        }
+
+        // Load offers
+        async function loadOffers() {
+            const res = await fetch('/api/offers?limit=20');
+            const offers = await res.json();
+
+            const container = document.getElementById('offers');
+
+            if (offers.length === 0) {
+                container.innerHTML = '<div class="empty">No hay ofertas todavía. Agrega productos para rastrear.</div>';
+                return;
+            }
+
+            container.innerHTML = offers.map(offer => `
+                <div class="offer-card ${offer.isError ? 'error' : 'deal'}">
+                    <div class="offer-title">
+                        ${offer.isError ? '🚨' : '💰'} ${offer.product.title}
+                    </div>
+                    <div class="offer-details">
+                        <span class="store-badge">${offer.product.store}</span>
+                        <span class="price-old">${offer.product.currency} ${offer.oldPrice.toFixed(2)}</span>
+                        <span class="price-new">${offer.product.currency} ${offer.newPrice.toFixed(2)}</span>
+                        <span class="discount">${offer.discountPercent.toFixed(0)}% OFF</span>
+                    </div>
+                    <div>
+                        ${offer.isError ? '<strong>⚡ POSIBLE ERROR DE PRECIO</strong>' : ''}
+                        <br>
+                        <small>Detectado: ${new Date(offer.createdAt).toLocaleString()}</small>
+                    </div>
+                    ${offer.affiliateLink ? `<a href="${offer.affiliateLink}" target="_blank" class="btn">Ver Oferta</a>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Load products
+        async function loadProducts() {
+            const res = await fetch('/api/products?limit=20');
+            const products = await res.json();
+
+            const container = document.getElementById('products');
+
+            if (products.length === 0) {
+                container.innerHTML = '<div class="empty">No hay productos rastreados.</div>';
+                return;
+            }
+
+            container.innerHTML = products.map(product => `
+                <div class="offer-card">
+                    <div class="offer-title">${product.title}</div>
+                    <div class="offer-details">
+                        <span class="store-badge">${product.store}</span>
+                        <span class="price-new">${product.currency} ${product.currentPrice?.toFixed(2) || 'N/A'}</span>
+                        <span>${product.inStock ? '✅ En stock' : '❌ Sin stock'}</span>
+                    </div>
+                    <small>Última revisión: ${new Date(product.lastChecked).toLocaleString()}</small>
+                    <br>
+                    <a href="${product.url}" target="_blank" class="btn">Ver Producto</a>
+                </div>
+            `).join('');
+        }
+
+        // Search product by name
+        async function searchProduct() {
+            const query = document.getElementById('productSearch').value.trim();
+            if (!query) {
+                alert('Por favor ingresa un nombre de producto');
+                return;
+            }
+
+            try {
+                document.getElementById('productSearch').disabled = true;
+                const btn = event.target;
+                btn.textContent = 'Buscando...';
+                btn.disabled = true;
+
+                const res = await fetch('/api/products/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, autoTrack: true })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(`✅ Búsqueda completada!\n\nEncontrados: ${data.resultsFound} productos\nRastreando: ${data.tracked} productos`);
+                    document.getElementById('productSearch').value = '';
+                    loadStats();
+                    loadProducts();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Error al buscar producto');
+            } finally {
+                document.getElementById('productSearch').disabled = false;
+                const btn = event.target;
+                btn.textContent = 'Buscar y Rastrear';
+                btn.disabled = false;
+            }
+        }
+
+        // Add product by URL
+        async function addProduct() {
+            const url = document.getElementById('productUrl').value.trim();
+            if (!url) {
+                alert('Por favor ingresa una URL');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/products/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✅ Producto agregado exitosamente!');
+                    document.getElementById('productUrl').value = '';
+                    loadStats();
+                    loadProducts();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Error al agregar producto');
+            }
+        }
+
+        // Run auto-discovery manually
+        async function runAutoDiscovery() {
+            if (!confirm('¿Iniciar búsqueda automática?\n\nEsto buscará productos populares en múltiples categorías. Puede tomar varios minutos.')) {
+                return;
+            }
+
+            try {
+                const statusDiv = document.getElementById('discoveryStatus');
+                const btn = event.target;
+
+                btn.disabled = true;
+                btn.textContent = '🔍 Buscando productos...';
+                statusDiv.textContent = 'Búsqueda en progreso...';
+
+                const res = await fetch('/api/discovery/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maxPerSearch: 3 })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    statusDiv.textContent = `✅ Búsqueda completada! Descubiertos: ${data.totalDiscovered} | Nuevos rastreados: ${data.totalTracked}`;
+                    loadStats();
+                    loadProducts();
+                    setTimeout(() => {
+                        statusDiv.textContent = '';
+                    }, 10000);
+                } else {
+                    statusDiv.textContent = '❌ Error en la búsqueda';
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Error al ejecutar búsqueda automática');
+            } finally {
+                const btn = event.target;
+                btn.disabled = false;
+                btn.textContent = '🚀 Iniciar Búsqueda Automática Ahora';
+            }
+        }
+
+        // Auto refresh every 30 seconds
+        setInterval(() => {
+            loadStats();
+            loadOffers();
+            loadProducts();
+        }, 30000);
+
+        // Initial load
+        loadStats();
+        loadOffers();
+        loadProducts();
+    </script>
+</body>
+</html>

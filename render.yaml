@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ofertas-mx
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: PORT
+        value: 3000
+    healthCheckPath: /health
+    autoDeploy: true

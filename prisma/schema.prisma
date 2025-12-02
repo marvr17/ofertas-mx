@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  title       String
+  store       String   // "mercadolibre", "amazon"
+  externalId  String   // ID del producto en la tienda
+  category    String?
+  imageUrl    String?
+  currentPrice Float?
+  currency    String   @default("USD")
+  inStock     Boolean  @default(true)
+  lastChecked DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  prices      PriceHistory[]
+  offers      Offer[]
+
+  @@index([store])
+  @@index([externalId])
+}
+
+model PriceHistory {
+  id        String   @id @default(cuid())
+  productId String
+  price     Float
+  inStock   Boolean  @default(true)
+  timestamp DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([timestamp])
+}
+
+model Offer {
+  id              String   @id @default(cuid())
+  productId       String
+  oldPrice        Float
+  newPrice        Float
+  discountPercent Float
+  isError         Boolean  @default(false) // true si parece error de precio
+  notified        Boolean  @default(false)
+  affiliateLink   String?
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([notified])
+  @@index([createdAt])
+}
+
+model Settings {
+  id                    String   @id @default(cuid())
+  key                   String   @unique
+  value                 String
+  updatedAt             DateTime @default(now())
+}
