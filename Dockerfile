@@ -33,7 +33,6 @@ RUN npm ci --only=production
 
 # Copy built application
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder /app/public ./public
 
 # Generate Prisma client
