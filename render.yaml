@@ -5,13 +5,14 @@ services:
     region: oregon
     plan: free
     buildCommand: npm ci && npx prisma generate && npm run build
-    startCommand: npm start
+    startCommand: npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_VERSION
-        value: 20.11.0
+        value: 20.18.1
       - key: DATABASE_URL
         value: file:./dev.db
       - key: PORT
-        value: 3000
-    healthCheckPath: /health
+        value: 10000
+      - key: NODE_ENV
+        value: production
     autoDeploy: true
