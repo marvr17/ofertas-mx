@@ -21,7 +21,10 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/node-telegram-bot-api": "^0.64.13",
     "axios": "^1.13.2",
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.3",
@@ -31,11 +34,6 @@
     "prisma": "^5.22.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node-cron": "^3.0.11",
-    "@types/node-telegram-bot-api": "^0.64.13"
   }
 }
  
