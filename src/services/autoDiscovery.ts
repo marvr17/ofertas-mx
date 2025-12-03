@@ -1,4 +1,5 @@
 import { searchMercadoLibre, trackMLProduct } from '../scrapers/mercadolibre';
+import { searchAmazon, trackAmazonProduct } from '../scrapers/amazon';
 import prisma from '../db';
 
 /**
@@ -70,10 +71,10 @@ export const POPULAR_CATEGORIES = [
 ];
 
 /**
- * Auto-discover products from Mercado Libre
+ * Auto-discover products from Amazon Mexico
  */
 export async function autoDiscoverProducts(maxPerSearch: number = 5) {
-  console.log('\n🔍 Starting automatic product discovery...\n');
+  console.log('\n🔍 Starting automatic product discovery on Amazon...\n');
 
   let totalDiscovered = 0;
   let totalTracked = 0;
@@ -82,32 +83,31 @@ export async function autoDiscoverProducts(maxPerSearch: number = 5) {
     try {
       console.log(`Searching for: "${searchTerm}"...`);
 
-      const results = await searchMercadoLibre(searchTerm, 'MLM', 20);
+      const results = await searchAmazon(searchTerm, 20);
 
       if (!results || results.length === 0) {
         console.log(`  No results found for "${searchTerm}"`);
         continue;
       }
 
-      // Filter for products with good prices and free shipping
+      // Filter for products with good prices
       const goodDeals = results
         .filter((item: any) => {
-          // Must have free shipping
-          if (!item.shipping?.free_shipping) return false;
+          // Must be in stock
+          if (!item.inStock) return false;
 
-          // Must have a decent price (not too cheap, might be fake)
+          // Must have a decent price (not too cheap, might be error)
           if (item.price < 100) return false;
 
-          // Must be in stock
-          if (item.available_quantity === 0) return false;
-
-          // Must have good reputation
-          if (item.seller_reputation?.power_seller_status !== 'platinum' &&
-              item.seller_reputation?.power_seller_status !== 'gold') {
-            return false;
+          // Prefer items with discount (have listPrice)
+          if (item.listPrice && item.listPrice > item.price) {
+            const discount = ((item.listPrice - item.price) / item.listPrice) * 100;
+            // Good discount (10%+)
+            if (discount >= 10) return true;
           }
 
-          return true;
+          // Or just track high-value items
+          return item.price >= 500;
         })
         .slice(0, maxPerSearch);
 
@@ -117,7 +117,7 @@ export async function autoDiscoverProducts(maxPerSearch: number = 5) {
       // Track these products
       for (const deal of goodDeals) {
         try {
-          const url = deal.permalink;
+          const url = deal.url;
 
           // Check if already tracking
           const existing = await prisma.product.findUnique({
@@ -130,7 +130,7 @@ export async function autoDiscoverProducts(maxPerSearch: number = 5) {
           }
 
           // Add to tracking
-          await trackMLProduct(url);
+          await trackAmazonProduct(url);
           totalTracked++;
           console.log(`  ✅ Now tracking: ${deal.title.substring(0, 50)}...`);
 

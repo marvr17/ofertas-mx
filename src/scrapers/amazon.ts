@@ -232,3 +232,85 @@ export async function trackAmazonProduct(url: string) {
 
   return product;
 }
+
+/**
+ * Search Amazon Mexico for products
+ */
+export async function searchAmazon(
+  query: string,
+  limit: number = 20
+): Promise<AmazonProduct[]> {
+  try {
+    const searchUrl = `https://www.amazon.com.mx/s?k=${encodeURIComponent(query)}`;
+
+    const response = await axios.get(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+      },
+      timeout: 15000,
+    });
+
+    const $ = cheerio.load(response.data);
+    const products: AmazonProduct[] = [];
+
+    // Amazon search results are in divs with data-asin attribute
+    $('div[data-asin]').each((i, elem) => {
+      if (products.length >= limit) return false;
+
+      const asin = $(elem).attr('data-asin');
+      if (!asin || asin === '') return;
+
+      // Extract title
+      const titleElem = $(elem).find('h2 a span');
+      const title = titleElem.text().trim();
+      if (!title) return;
+
+      // Extract price
+      const priceWhole = $(elem).find('.a-price-whole').first().text().trim();
+      const priceFraction = $(elem).find('.a-price-fraction').first().text().trim();
+      const priceText = priceWhole + (priceFraction || '');
+      const price = parsePrice(priceText);
+      if (!price || price === 0) return;
+
+      // Extract URL
+      const linkElem = $(elem).find('h2 a');
+      const relativeUrl = linkElem.attr('href');
+      if (!relativeUrl) return;
+      const url = relativeUrl.startsWith('http')
+        ? relativeUrl
+        : `https://www.amazon.com.mx${relativeUrl}`;
+
+      // Extract image
+      const imageUrl = $(elem).find('img.s-image').first().attr('src');
+
+      // Extract original price if on sale
+      const listPriceText = $(elem).find('.a-price.a-text-price .a-offscreen').first().text().trim();
+      const listPrice = listPriceText ? parsePrice(listPriceText) : undefined;
+
+      products.push({
+        id: asin,
+        title,
+        price,
+        currency: 'MXN',
+        listPrice,
+        url,
+        imageUrl,
+        inStock: true, // Assume in stock if showing in search
+      });
+    });
+
+    console.log(`[Amazon Search] Found ${products.length} products for "${query}"`);
+    return products;
+  } catch (error: any) {
+    console.error('Error searching Amazon:', error.message);
+    return [];
+  }
+}
