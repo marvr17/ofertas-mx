@@ -306,7 +306,7 @@
             <h2>Agregar Producto</h2>
             <div class="add-product">
                 <input type="text" id="productSearch" placeholder="🔍 Buscar por nombre (ej: iPhone 15, PS5, laptop gaming)">
-                <button class="btn" onclick="searchProduct()">Buscar y Rastrear</button>
+                <button class="btn" onclick="searchProduct(event)">Buscar y Rastrear</button>
             </div>
             <div style="text-align: center; margin: 15px 0; color: #71717a;">O</div>
             <div class="add-product">
@@ -321,7 +321,7 @@
                 El sistema busca automáticamente productos cada 2 horas.<br>
                 O puedes iniciar una búsqueda manual ahora:
             </p>
-            <button class="btn" onclick="runAutoDiscovery()" style="font-size: 1.1em; padding: 15px 30px;">
+            <button class="btn" onclick="runAutoDiscovery(event)" style="font-size: 1.1em; padding: 15px 30px;">
                 🚀 Iniciar Búsqueda Automática Ahora
             </button>
             <div id="discoveryStatus" style="margin-top: 15px; color: #2ed573;"></div>
@@ -410,7 +410,7 @@
         }
 
         // Search product by name
-        async function searchProduct() {
+        async function searchProduct(event) {
             const query = document.getElementById('productSearch').value.trim();
             if (!query) {
                 alert('Por favor ingresa un nombre de producto');
@@ -480,7 +480,7 @@
         }
 
         // Run auto-discovery manually
-        async function runAutoDiscovery() {
+        async function runAutoDiscovery(event) {
             if (!confirm('¿Iniciar búsqueda automática?\n\nEsto buscará productos populares en múltiples categorías. Puede tomar varios minutos.')) {
                 return;
             }
